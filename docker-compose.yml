@@ -1,0 +1,24 @@
+services:
+
+  # Run the grok pattern test suite (test/test.rb + test/*.yaml).
+  # Usage: docker compose run --rm test-grok-patterns
+  #
+  # Note: initialise the logstash-patterns-core submodule first:
+  #   git submodule update --init
+  test-grok-patterns:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/runtests
+    working_dir: /runtests
+    command: ruby test/test.rb
+
+  # Validate the Logstash filter config syntax.
+  # Usage: docker compose run --rm test-config-syntax
+  test-config-syntax:
+    image: logstash:9.2.1
+    volumes:
+      - ./postfix.grok:/etc/logstash/patterns.d/postfix.grok:ro
+      - ./50-filter-postfix.conf:/usr/share/logstash/pipeline/50-filter-postfix.conf:ro
+    command: logstash --config.test_and_exit -f /usr/share/logstash/pipeline/50-filter-postfix.conf

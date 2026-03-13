@@ -32,8 +32,24 @@ Also, the example Logstash config file adds some informative tags that aid in fi
 
 Additional test scripts are available for local tests (using docker containers):
 - `test_grok_patterns.sh`: runs the test suite for the grok patterns in `postfix.grok`
-- `test_logstash_config.sh`: validates the logstash config in `50-filter-postfix.conf`
+- `test_config_syntax.sh`: validates the logstash config in `50-filter-postfix.conf`
 - `test_pipeline.sh`: validates that the logstash config can be used in a simple logstash pipeline, and ensures that this results in parsed messages
+
+A `docker-compose.yml` file is included to make running the tests as easy as possible. First initialise the submodule if you haven't already:
+
+```sh
+git submodule update --init
+```
+
+Then run the individual test services:
+
+```sh
+# Test the grok patterns
+docker compose run --rm test-grok-patterns
+
+# Validate the Logstash filter config syntax
+docker compose run --rm test-config-syntax
+```
 
 Contributing
 ------------
