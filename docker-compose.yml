@@ -44,4 +44,4 @@ services:
     volumes:
       - .:/runtests
     working_dir: /runtests
-    command: vector test --config vector/vector_tests.yaml
+    command: test vector/vector_tests.yaml

@@ -19,4 +19,4 @@ FROM timberio/vector:latest-alpine
 
 WORKDIR /runtests
 
-CMD ["vector", "test", "--config", "vector/vector_tests.yaml"]
+CMD ["test", "vector/vector_tests.yaml"]
