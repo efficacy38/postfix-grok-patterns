@@ -24,7 +24,7 @@ POSTFIX_VERIFY_CLEANUP_TYPE (full|partial)
 POSTFIX_QUEUEID ([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)
 
 POSTFIX_CLIENT %{HOSTNAME:postfix_client_hostname}?\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\](:%{INT:postfix_client_port})?
-POSTFIX_RELAY %{HOSTNAME:postfix_relay_hostname}?\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}
+POSTFIX_RELAY (?:%{HOSTNAME:postfix_relay_hostname}?\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})
 POSTFIX_SMTP_STAGE (CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\.)
 POSTFIX_ACTION (accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)
 POSTFIX_STATUS_CODE \d{3}
@@ -36,7 +36,7 @@ POSTFIX_KEYVALUE_DATA [\w-]+=[^;]*
 POSTFIX_KEYVALUE %{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}
 
 
-POSTFIX_TLSCONN %{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \(%{DATA:postfix_tls_cipher_size} bits\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\)( server-digest %{DATA:postfix_tls_server_digest})?)?
+POSTFIX_TLSCONN %{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \(%{DATA:postfix_tls_cipher_size} bits\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\))?( server-digest %{DATA:postfix_tls_server_digest})?
 POSTFIX_TLSVERIFICATION certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}
 
 POSTFIX_DELAYS %{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}

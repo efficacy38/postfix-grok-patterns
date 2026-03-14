@@ -35,4 +35,4 @@ docker run \
   --volume "$(pwd)":"${VOLUMEPATH}" \
   --workdir "${VOLUMEPATH}" \
   "${DOCKERIMAGE}" \
-  vector test --config vector/vector_tests.yaml
+  test vector/vector_tests.yaml

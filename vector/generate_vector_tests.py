@@ -22,6 +22,7 @@ References:
 import os
 import re
 import sys
+from collections import OrderedDict
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -142,6 +143,73 @@ def strip_anchors(pattern_str):
 
 
 # ---------------------------------------------------------------------------
+# Detect patterns that are pure alternations of other named patterns,
+# e.g. POSTFIX_SMTP %{POSTFIX_SMTP_DELIVERY}|%{POSTFIX_SMTP_CONNERR}|...
+# Returns a dict: {name: [component_name, ...]}
+# ---------------------------------------------------------------------------
+_PURE_ALT_RE = re.compile(r'^%\{([A-Z0-9_]+)\}$')
+
+
+def build_aggregate_map(all_patterns):
+    """
+    Return a dict mapping each 'pure alternation' pattern name to its list
+    of component pattern names.  A pure alternation has a definition that
+    consists entirely of %{NAME} tokens separated by '|'.
+    """
+    aggregate = {}
+    for name, definition in all_patterns:
+        parts = definition.split('|')
+        sub_names = []
+        is_pure = True
+        for part in parts:
+            m = _PURE_ALT_RE.match(part.strip())
+            if m:
+                sub_names.append(m.group(1))
+            else:
+                is_pure = False
+                break
+        if is_pure and sub_names:
+            aggregate[name] = sub_names
+    return aggregate
+
+
+def resolve_to_leaves(name, aggregate, _visited=None):
+    """
+    Recursively expand *name* through the aggregate map until only
+    non-aggregate (leaf) pattern names remain.  Returns a list of
+    leaf pattern names in expansion order.
+    """
+    if _visited is None:
+        _visited = set()
+    if name in _visited:
+        return [name]          # break circular refs (shouldn't occur)
+    _visited = _visited | {name}
+    if name in aggregate:
+        result = []
+        for sub in aggregate[name]:
+            result.extend(resolve_to_leaves(sub, aggregate, _visited))
+        return result
+    return [name]
+
+
+def patterns_array_for(pattern_str, aggregate):
+    """
+    Given a stripped pattern string like '%{POSTFIX_SMTP}', return the list
+    of pattern strings to pass to parse_groks' patterns array.
+
+    Aggregate patterns (pure alternations) are recursively expanded into
+    their leaf components so that each entry in the patterns array contains
+    only a single %{NAME} reference with no duplicate named capture groups.
+    Non-aggregate patterns are returned unchanged in a one-element list.
+    """
+    m = _PURE_ALT_RE.match(pattern_str)
+    if m:
+        leaves = resolve_to_leaves(m.group(1), aggregate)
+        return [f'%{{{leaf}}}' for leaf in leaves]
+    return [pattern_str]
+
+
+# ---------------------------------------------------------------------------
 # Generate the VRL aliases object literal (multi-line string)
 # ---------------------------------------------------------------------------
 def build_aliases_block(patterns, indent=10):
@@ -179,7 +247,7 @@ def vrl_field_access(name):
     """Return e.g. `.foo` or `."foo-bar"` for use in assert_eq!."""
     if re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
         return f'.{name}'
-    return f'."{ name }"'
+    return f'."{name}"'
 
 
 # ---------------------------------------------------------------------------
@@ -193,7 +261,9 @@ def main():
 
     all_patterns = parse_postfix_grok(GROK_FILE)
     aliases_block = build_aliases_block(all_patterns)
-    aliases_oneliner = "{\n" + aliases_block + "\n        }"
+
+    # Build map of aggregate (pure-alternation) patterns for expansion.
+    aggregate_map = build_aggregate_map(all_patterns)
 
     # 2. Load test YAML files
     yaml_files = sorted(
@@ -203,7 +273,6 @@ def main():
 
     # group tests by the grok pattern they use
     # key: strip-anchored pattern string  e.g. "%{POSTFIX_SMTPD}"
-    from collections import OrderedDict
     pattern_to_tests = OrderedDict()   # pattern_str -> list of (test_name, data, results)
 
     for yf in yaml_files:
@@ -250,7 +319,20 @@ def main():
         lines.append(f"    source: |-")
         lines.append(f'      . |= parse_groks!(')
         lines.append(f'        .message,')
-        lines.append(f'        patterns: ["{pat}"],')
+
+        # Expand aggregate patterns into their leaf components so that each
+        # entry in the patterns array is a single, self-contained sub-pattern
+        # without duplicated named capture groups.
+        expanded = patterns_array_for(pat, aggregate_map)
+        if len(expanded) == 1:
+            lines.append(f'        patterns: ["{expanded[0]}"],')
+        else:
+            lines.append(f'        patterns: [')
+            for i, p in enumerate(expanded):
+                comma = "," if i < len(expanded) - 1 else ""
+                lines.append(f'          "{p}"{comma}')
+            lines.append(f'        ],')
+
         lines.append(f'        aliases: {{')
         lines.append(aliases_block)
         lines.append(f'        }}')
@@ -275,13 +357,22 @@ def main():
             lines.append(f"          - type: vrl")
             lines.append(f"            source: |-")
             if results:
+                assertions = []
                 for field, expected in sorted(results.items()):
+                    # Vector/Datadog grok does not emit empty-string captures;
+                    # skip assertions for fields expected to be empty.
+                    if str(expected) == "":
+                        continue
                     access = vrl_field_access(field)
                     escaped_expected = vrl_escape(str(expected))
-                    lines.append(
+                    assertions.append(
                         f'              assert_eq!({access}, "{escaped_expected}", '
                         f'"{test_name}: {field} mismatch")'
                     )
+                if assertions:
+                    lines.extend(assertions)
+                else:
+                    lines.append(f'              true')
             else:
                 # No specific field checks — just ensure parse succeeded (event exists)
                 lines.append(f'              true')

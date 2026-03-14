@@ -14,7 +14,11 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_ANVIL}"],
+        patterns: [
+          "%{POSTFIX_ANVIL_CONN_RATE}",
+          "%{POSTFIX_ANVIL_CONN_CACHE}",
+          "%{POSTFIX_ANVIL_CONN_COUNT}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -36,7 +40,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -46,7 +50,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -145,7 +149,7 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_BOUNCE}"],
+        patterns: ["%{POSTFIX_BOUNCE_NOTIFICATION}"],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -167,7 +171,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -177,7 +181,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -276,7 +280,14 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_CLEANUP}"],
+        patterns: [
+          "%{POSTFIX_CLEANUP_MESSAGEID}",
+          "%{POSTFIX_CLEANUP_MILTER}",
+          "%{POSTFIX_CLEANUP_PREPEND}",
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}",
+          "%{POSTFIX_KEYVALUE}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -298,7 +309,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -308,7 +319,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -429,7 +440,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -439,7 +450,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -560,7 +571,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -570,7 +581,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -669,7 +680,11 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_DISCARD}"],
+        patterns: [
+          "%{POSTFIX_DISCARD_ANY}",
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -691,7 +706,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -701,7 +716,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -800,7 +815,11 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_DNSBLOG}"],
+        patterns: [
+          "%{POSTFIX_DNSBLOG_LISTING}",
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -822,7 +841,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -832,7 +851,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -931,7 +950,7 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_ERROR}"],
+        patterns: ["%{POSTFIX_ERROR_ANY}"],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -953,7 +972,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -963,7 +982,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -1062,7 +1081,22 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_LMTP}"],
+        patterns: [
+          "%{POSTFIX_SMTP_DELIVERY}",
+          "%{POSTFIX_SMTP_CONNERR}",
+          "%{POSTFIX_SMTP_SSLCONNERR}",
+          "%{POSTFIX_SMTP_SSLAUTHERR}",
+          "%{POSTFIX_SMTP_LOSTCONN}",
+          "%{POSTFIX_SMTP_TIMEOUT}",
+          "%{POSTFIX_SMTP_RELAYERR}",
+          "%{POSTFIX_SMTP_RELAYREFUSED}",
+          "%{POSTFIX_TLSCONN}",
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}",
+          "%{POSTFIX_SMTP_UTF8}",
+          "%{POSTFIX_TLSVERIFICATION}",
+          "%{POSTFIX_SMTP_PIX}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -1084,7 +1118,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -1094,7 +1128,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -1193,7 +1227,11 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_LOCAL}"],
+        patterns: [
+          "%{POSTFIX_LOCAL_DELIVERY}",
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -1215,7 +1253,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -1225,7 +1263,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -1324,7 +1362,12 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_MASTER}"],
+        patterns: [
+          "%{POSTFIX_MASTER_START}",
+          "%{POSTFIX_MASTER_EXIT}",
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -1346,7 +1389,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -1356,7 +1399,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -1455,7 +1498,7 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_PICKUP}"],
+        patterns: ["%{POSTFIX_KEYVALUE}"],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -1477,7 +1520,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -1487,7 +1530,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -1586,7 +1629,7 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_PIPE}"],
+        patterns: ["%{POSTFIX_PIPE_ANY}"],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -1608,7 +1651,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -1618,7 +1661,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -1717,7 +1760,10 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_POSTDROP}"],
+        patterns: [
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -1739,7 +1785,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -1749,7 +1795,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -1848,7 +1894,10 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_POSTMAP}"],
+        patterns: [
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -1870,7 +1919,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -1880,7 +1929,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -1979,7 +2028,17 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_POSTSCREEN}"],
+        patterns: [
+          "%{POSTFIX_PS_CONNECT}",
+          "%{POSTFIX_PS_ACCESS}",
+          "%{POSTFIX_SMTPD_NOQUEUE}",
+          "%{POSTFIX_PS_TOOBUSY}",
+          "%{POSTFIX_PS_CACHE}",
+          "%{POSTFIX_PS_DNSBL}",
+          "%{POSTFIX_PS_VIOLATIONS}",
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -2001,7 +2060,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -2011,7 +2070,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -2110,7 +2169,10 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_POSTSUPER}"],
+        patterns: [
+          "%{POSTFIX_POSTSUPER_ACTION}",
+          "%{POSTFIX_POSTSUPER_SUMMARY}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -2132,7 +2194,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -2142,7 +2204,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -2241,7 +2303,13 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_QMGR}"],
+        patterns: [
+          "%{POSTFIX_QMGR_INFO}",
+          "%{POSTFIX_QMGR_ACTIVE}",
+          "%{POSTFIX_QMGR_EXPIRED}",
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -2263,7 +2331,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -2273,7 +2341,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -2394,7 +2462,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -2404,7 +2472,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -2503,7 +2571,11 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_SCACHE}"],
+        patterns: [
+          "%{POSTFIX_SCACHE_LOOKUPS}",
+          "%{POSTFIX_SCACHE_SIMULTANEOUS}",
+          "%{POSTFIX_SCACHE_TIMESTAMP}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -2525,7 +2597,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -2535,7 +2607,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -2634,7 +2706,10 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_SCRIPT}"],
+        patterns: [
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -2656,7 +2731,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -2666,7 +2741,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -2765,7 +2840,10 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_SENDMAIL}"],
+        patterns: [
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -2787,7 +2865,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -2797,7 +2875,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -2896,7 +2974,22 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_SMTP}"],
+        patterns: [
+          "%{POSTFIX_SMTP_DELIVERY}",
+          "%{POSTFIX_SMTP_CONNERR}",
+          "%{POSTFIX_SMTP_SSLCONNERR}",
+          "%{POSTFIX_SMTP_SSLAUTHERR}",
+          "%{POSTFIX_SMTP_LOSTCONN}",
+          "%{POSTFIX_SMTP_TIMEOUT}",
+          "%{POSTFIX_SMTP_RELAYERR}",
+          "%{POSTFIX_SMTP_RELAYREFUSED}",
+          "%{POSTFIX_TLSCONN}",
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}",
+          "%{POSTFIX_SMTP_UTF8}",
+          "%{POSTFIX_TLSVERIFICATION}",
+          "%{POSTFIX_SMTP_PIX}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -2918,7 +3011,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -2928,7 +3021,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -3027,7 +3120,19 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_SMTPD}"],
+        patterns: [
+          "%{POSTFIX_SMTPD_CONNECT}",
+          "%{POSTFIX_SMTPD_DISCONNECT}",
+          "%{POSTFIX_SMTPD_LOSTCONN}",
+          "%{POSTFIX_SMTPD_NOQUEUE}",
+          "%{POSTFIX_SMTPD_PIPELINING}",
+          "%{POSTFIX_TLSCONN}",
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}",
+          "%{POSTFIX_SMTPD_PROXY}",
+          "%{POSTFIX_SMTPD_DISCARD_EHLO}",
+          "%{POSTFIX_KEYVALUE}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -3049,7 +3154,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -3059,7 +3164,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -3180,7 +3285,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -3190,7 +3295,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -3289,7 +3394,10 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_TLSMGR}"],
+        patterns: [
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -3311,7 +3419,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -3321,7 +3429,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -3420,7 +3528,11 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_TLSPROXY}"],
+        patterns: [
+          "%{POSTFIX_TLSPROXY_CONN}",
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -3442,7 +3554,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -3452,7 +3564,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -3551,7 +3663,10 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_TRIVIAL_REWRITE}"],
+        patterns: [
+          "%{POSTFIX_WARNING_WITH_KV}",
+          "%{POSTFIX_WARNING_WITHOUT_KV}"
+        ],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -3573,7 +3688,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -3583,7 +3698,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -3682,7 +3797,7 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_VERIFY}"],
+        patterns: ["%{POSTFIX_VERIFY_CACHE}"],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -3704,7 +3819,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -3714,7 +3829,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -3813,7 +3928,7 @@ transforms:
     source: |-
       . |= parse_groks!(
         .message,
-        patterns: ["%{POSTFIX_VIRTUAL}"],
+        patterns: ["%{POSTFIX_SMTP_DELIVERY}"],
         aliases: {
           "GREEDYDATA_NO_COLON": "[^:]*",
           "GREEDYDATA_NO_SEMICOLON": "[^;]*",
@@ -3835,7 +3950,7 @@ transforms:
           "POSTFIX_VERIFY_CLEANUP_TYPE": "(full|partial)",
           "POSTFIX_QUEUEID": "([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)",
           "POSTFIX_CLIENT": "%{HOSTNAME:postfix_client_hostname}?\\[(%{IP_UNKNOWN:postfix_client_ip_unknown}|%{IP:postfix_client_ip})\\](:%{INT:postfix_client_port})?",
-          "POSTFIX_RELAY": "%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service}",
+          "POSTFIX_RELAY": "(?:%{HOSTNAME:postfix_relay_hostname}?\\[(%{IP:postfix_relay_ip}|%{DATA:postfix_relay_service})\\](:%{INT:postfix_relay_port})?|%{WORD:postfix_relay_service})",
           "POSTFIX_SMTP_STAGE": "(CONNECT|HELO|EHLO|STARTTLS|AUTH|MAIL( FROM)?|RCPT( TO)?|(end of )?DATA|BDAT|RSET|UNKNOWN|END-OF-MESSAGE|VRFY|\\.)",
           "POSTFIX_ACTION": "(accept|defer|discard|filter|header-redirect|milter-reject|reject|reject_warning)",
           "POSTFIX_STATUS_CODE": "\\d{3}",
@@ -3845,7 +3960,7 @@ transforms:
           "POSTFIX_PS_VIOLATION": "(BARE NEWLINE|COMMAND (TIME|COUNT|LENGTH) LIMIT|COMMAND PIPELINING|DNSBL|HANGUP|NON-SMTP COMMAND|PREGREET)",
           "POSTFIX_KEYVALUE_DATA": "[\\w-]+=[^;]*",
           "POSTFIX_KEYVALUE": "%{POSTFIX_QUEUEID:postfix_queueid}: %{POSTFIX_KEYVALUE_DATA:postfix_keyvalue_data}",
-          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\)( server-digest %{DATA:postfix_tls_server_digest})?)?",
+          "POSTFIX_TLSCONN": "%{DATA:postfix_tls_trustlevel} TLS connection established (to %{POSTFIX_RELAY}|from %{POSTFIX_CLIENT}): %{DATA:postfix_tls_version} with cipher %{DATA:postfix_tls_cipher} \\(%{DATA:postfix_tls_cipher_size} bits\\)( key-exchange %{DATA:postfix_tls_key_exchange} server-signature %{DATA:postfix_tls_server_signature} \\((%{INT:postfix_tls_server_signature_size} bits|%{POSTFIX_TLS_SERVER_SIGNATURE_CURVE:postfix_tls_server_signature_curve})\\))?( server-digest %{DATA:postfix_tls_server_digest})?",
           "POSTFIX_TLSVERIFICATION": "certificate verification failed for %{POSTFIX_RELAY}: %{GREEDYDATA:postfix_tls_error}",
           "POSTFIX_DELAYS": "%{NUMBER:postfix_delay_before_qmgr}/%{NUMBER:postfix_delay_in_qmgr}/%{NUMBER:postfix_delay_conn_setup}/%{NUMBER:postfix_delay_transmission}",
           "POSTFIX_LOSTCONN": "(Connection timed out|No route to host|Connection refused|Network is unreachable|lost connection|timeout|SSL_accept error|-1|Address not available|Operation timed out|Address not available|Operation timed out|bare <LF> received)",
@@ -4174,7 +4289,6 @@ tests:
         conditions:
           - type: vrl
             source: |-
-              assert_eq!(."postfix_message-id", "", "cleanup_0002: postfix_message-id mismatch")
               assert_eq!(.postfix_queueid, "4104E3D", "cleanup_0002: postfix_queueid mismatch")
 
   - name: cleanup_0003
@@ -5398,7 +5512,6 @@ tests:
         conditions:
           - type: vrl
             source: |-
-              assert_eq!(.postfix_from, "", "qmgr_0004: postfix_from mismatch")
               assert_eq!(.postfix_queueid, "585BC3F", "qmgr_0004: postfix_queueid mismatch")
               assert_eq!(.postfix_status, "expired", "qmgr_0004: postfix_status mismatch")
 
@@ -6463,7 +6576,6 @@ tests:
           - type: vrl
             source: |-
               assert_eq!(.postfix_keyvalue_data, "from=<user1@test.example.com> to=<user2@example2.com> proto=ESMTP helo=<[192.168.0.16]>", "smtpd_0021: postfix_keyvalue_data mismatch")
-              assert_eq!(.postfix_proxy_message, "", "smtpd_0021: postfix_proxy_message mismatch")
               assert_eq!(.postfix_proxy_result, "reject", "smtpd_0021: postfix_proxy_result mismatch")
               assert_eq!(.postfix_proxy_smtp_stage, "END-OF-MESSAGE", "smtpd_0021: postfix_proxy_smtp_stage mismatch")
 
