@@ -23,6 +23,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Generate Vector test config from test fixtures
+        run: python3 vector/generate_vector_tests.py
       - name: Build Vector test image
         run: docker build --tag postfix-grok-patterns-vector -f Dockerfile.vector .
       - name: Run Vector unit tests
