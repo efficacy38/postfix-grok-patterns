@@ -22,3 +22,26 @@ services:
       - ./postfix.grok:/etc/logstash/patterns.d/postfix.grok:ro
       - ./50-filter-postfix.conf:/usr/share/logstash/pipeline/50-filter-postfix.conf:ro
     command: logstash --config.test_and_exit -f /usr/share/logstash/pipeline/50-filter-postfix.conf
+
+  # Run Vector unit tests derived from the same test fixtures as the Logstash tests.
+  # The generate_vector_tests.py script converts test/*.yaml to a Vector unit-test
+  # config (vector/vector_tests.yaml) using VRL parse_groks() with the custom aliases
+  # from postfix.grok.
+  #
+  # Run generate_vector_tests.py first (requires Python 3 on the host):
+  #   python3 vector/generate_vector_tests.py
+  #
+  # References:
+  #   Vector:              https://vector.dev/
+  #   Vector unit tests:   https://vector.dev/docs/reference/configuration/unit-tests/
+  #   VRL parse_groks:     https://vector.dev/docs/reference/vrl/functions/#parse_groks
+  #
+  # Usage: docker compose run --rm test-vector-patterns
+  test-vector-patterns:
+    build:
+      context: .
+      dockerfile: Dockerfile.vector
+    volumes:
+      - .:/runtests
+    working_dir: /runtests
+    command: test vector/vector_tests.yaml

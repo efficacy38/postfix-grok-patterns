@@ -3,6 +3,8 @@ on: [push, workflow_dispatch]
 jobs:
   test-patterns:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -13,3 +15,17 @@ jobs:
           ruby-version: '3.4'
       - run: gem install jls-grok minitest
       - run: ruby test/test.rb
+
+  test-vector-patterns:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate Vector test config from test fixtures
+        run: python3 vector/generate_vector_tests.py
+      - name: Build Vector test image
+        run: docker build --tag postfix-grok-patterns-vector -f Dockerfile.vector .
+      - name: Run Vector unit tests
+        run: docker run --rm --volume "$(pwd)":/runtests --workdir /runtests postfix-grok-patterns-vector test vector/vector_tests.yaml
